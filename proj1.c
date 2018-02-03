@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #define MAXCHAR 255  // Max length of a single line of code.
 
@@ -68,7 +69,25 @@ int main()
 }
 
 void my_setup() {}
-void my_prompt() {}
+void my_prompt() 
+{
+	  //get username
+  printf(getenv("USER"));
+  printf("@");
+ 
+  //get hostname
+  char hostBuffer[256];
+  int hostname;
+  hostname=gethostname(hostBuffer, sizeof(hostBuffer));
+  printf(hostBuffer);
+
+  printf(" :: ");
+  //get absolute directory
+  char cwd[1024];
+  if(getcwd(cwd, sizeof(cwd))!= NULL)
+    printf(cwd);
+  printf(" => ");
+}
 
 
 char **my_parse (char *line) 
