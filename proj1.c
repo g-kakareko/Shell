@@ -1,16 +1,21 @@
-//Done by PhD candidate Grzegorz Kakareko
-//Graduate Research Assistant
-//Department of Civil & Environmental Engineering
-//Florida State University
-//College of Engineering
-//2525 Pottsdamer Street, Tallahassee, FL 32310
-//Email: gk15b@my.fsu.edu - Phone: +1-850-570-4683
+/**************************************
+	
+	Authors: 
+	1)	Grzegorz Kakareko
+	email: gk15b@my.fsu.edu
+	2)	Jordan Camejo
+	email: 
+	3)	Grace Bunch
+	email:  
+
+**************************************/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #define MAXCHAR 255  // Max length of a single line of code.
 
@@ -28,19 +33,7 @@ char *space_special_char(char *line, char speacial_char);
 
 int main()
 {
-    
-    // struct Lines instruction_lines[MAXLINES];
-    // int i;
-    // i = 0;
-    // int adr0=0;      
-    // char *itr;
-    // char line[MAXCHAR];
-    // char label[MAXCHAR];
-    // char instr[MAXCHAR];
-    // char temspace[MAXCHAR];
-    // while( fgets(line, MAXCHAR, stdin) != NULL )
-    // sscanf(line, "%[^:]:\t%[^\n]", label, instr)==2       
-    // strcpy(instruction_lines[i].labels,label);         
+            
     char *line;
 	char **cmd;
     while (1) 
@@ -48,8 +41,9 @@ int main()
     	my_setup();
 		my_prompt();
 		line = my_read();
+		//printf("%s\n",line);
 		cmd = my_parse(line);
-		//printf("%s\n",cmd);
+		printf("------------- %s\n",line);
 		//my_execute(cmd);
 		//my_clean();
 
@@ -63,29 +57,28 @@ int main()
 		//Cleanup
 	}
 
-
-   
     return 0;
 }
 
 void my_setup() {}
 void my_prompt() 
 {
-	  //get username
-  printf(getenv("USER"));
-  printf("@");
+	//get username
+  //printf(getenv("USER"));
+  printf("%s",getenv("USER"));
+  printf("%s","@");
  
   //get hostname
   char hostBuffer[256];
   int hostname;
   hostname=gethostname(hostBuffer, sizeof(hostBuffer));
-  printf(hostBuffer);
+  printf("%s",hostBuffer);
 
   printf(" :: ");
   //get absolute directory
   char cwd[1024];
   if(getcwd(cwd, sizeof(cwd))!= NULL)
-    printf(cwd);
+    printf("%s",cwd);
   printf(" => ");
 }
 
@@ -100,9 +93,10 @@ char **my_parse (char *line)
 	// return NULL;
 	char **args;
 	char *clear_line;
-	clear_line = parse_whitespace(line);
+	line = parse_whitespace(line);
+	//line=clear_line;
 	printf("clear line: %s\n", line);
-	// args = parse_arguments(parsed);
+	args = parse_arguments(line);
 	// args = expand_variables(args);
 	// args = resolve_paths(args);
 	return NULL;
@@ -110,29 +104,120 @@ char **my_parse (char *line)
 //char **parse_whitespace(char *line) 
 char *parse_whitespace(char *line) 
 {
-//------- Removing extra white spaces--------
+/**************************************
+	Removing extra white spaces
+***************************************/
 	int i,x;
   	for(i=x=0; line[i]; ++i)
     	if(!isspace(line[i]) || (i>0 && !isspace(line[i-1])))
       		line[x++] = line[i];
   	line[x] = '\0';
-//----------------------------
-//------- Adding extra white spaces for special characters --------
-space_special_char(line, '<');
-//Special characters include: |, <, >, &, $, ~
-	
-	return NULL;
+/**************************************
+	Adding extra white spaces for special characters
+	Special characters include: |, <, >, &, $, ~
+***************************************/
+	line = space_special_char(line, '<');
+	line = space_special_char(line, '>');
+	line = space_special_char(line, '|');
+	line = space_special_char(line, '&');
+	line = space_special_char(line, '$');
+	printf("Final line: %s\n", line);
+
+	return line;
 }
 
 char *space_special_char(char *line, char speacial_char)
 {
-	int i,x;
-  	for(i=x=0; line[i]; ++i)
-    	if(line[i]==speacial_char)
-    		printf("we have special char");
-      		//line[x++] = line[i];
-  	line[x] = '\0';
-	return NULL;	
+	// int i,x;
+ //  	for(i=x=0; line[i]; ++i)
+ //    	if(line[i]==speacial_char)
+ //    		printf("we have special char");
+ //      		//line[x++] = line[i];
+ //  	line[x] = '\0';
+	int i;
+	for(i=0; i < strlen(line); i++)
+  	{
+    // if(line[i]=='|' || line[i] == '<' || line[i] == '>' || line[i]== '&' ||
+    //    line[i]=='$' || line[i] == '~')
+      if(line[i]==speacial_char)
+      {
+      	bool t1; // [i-1]
+      	bool t2; // [i+1]
+      	bool t3; // [i+1] and [i+1]
+      	t1=line[i-1]!=' ';
+      	t2=line[i+1]!=' ';
+      	if(t1 && t2)
+      	{
+			char *new_line;
+			new_line=(char*) malloc(MAXCHAR);
+
+			int k;
+			for(k=0; k < (i); k++)
+			{
+				new_line[k]=line[k];
+			}
+			new_line[i]=' ';
+			new_line[i+1]=line[i];
+			new_line[i+2]=' ';
+			int j;
+			printf("%d\n", k);
+			for(j=k; j < (strlen(line)); j++)
+			{
+				new_line[j+3]=line[j+1];
+			}
+			//line=new_line;
+			line=new_line;
+			printf("%s\n","t1 && t2" );
+			printf("new_line: %s\n", new_line);	
+
+      	}else if(t1)
+      	{
+      		char *new_line;
+			new_line=(char*) malloc(MAXCHAR);
+
+			int k;
+			for(k=0; k < (i); k++)
+			{
+				new_line[k]=line[k];
+			}
+			new_line[i]=' ';
+			new_line[i+1]=line[i];
+			int j;
+			for(j=k; j < (strlen(line)); j++)
+			{
+				new_line[j+2]=line[j+1];
+			}
+			line=new_line;
+			printf("%s\n","t1" );
+			printf("new_line: %s\n", new_line);
+
+      	}else if(t2)
+      	{
+      		char *new_line;
+			new_line=(char*) malloc(MAXCHAR);
+
+			int k;
+			for(k=0; k <= (i); k++)
+			{
+				new_line[k]=line[k];
+			}
+			new_line[i+1]=' ';
+			int j;
+			for(j=k; j < (strlen(line)); j++)
+			{
+				new_line[j+1]=line[j];
+			}
+			line=new_line;
+			printf("%s\n","t2" );
+			printf("new_line: %s\n", new_line);
+
+      	}
+      	}
+      }
+  
+
+  	printf("line: %s\n", line);
+	return line;	
 } 
 
 char **parse_arguments(char *line)
@@ -152,19 +237,29 @@ char **expand_variables(char **args)
 
 char *my_read () 
 {
+/**************************************
+Function to et line of data from stdin
+***************************************/ 
+
 	// char *toParseStr = (char*)malloc(10);
 	// printf("Enter string here: \n");
 	// scanf("%s",toParseStr);
 	// printf("%s\n",toParseStr);
 	// free(toParseStr);
 	// char *line = NULL;
- //  	ssize_t bufsize = 0; // have getline allocate a buffer for us
- //  	getline(&line, &bufsize, stdin);
-	char line[MAXCHAR];
-  	fgets(line, MAXCHAR, stdin);
-  	printf("%s\n",line);
-  	return line;
-	//return 0;
+ 	// ssize_t bufsize = 0; // have getline allocate a buffer for us
+ 	// getline(&line, &bufsize, stdin);
+	// char *line[MAXCHAR];
+ 	// fgets(line, MAXCHAR, stdin);
+ 	// printf("%s\n",line);
+  	// return line;
+ 	
+ 	char *command;
+ 	command=(char*) malloc(MAXCHAR);
+  	//int i;
+ 	fgets(command, MAXCHAR,stdin);
+ 	// printf("%s\n",command);
+	return command;
 }
 
 void my_execute (char ** cmd) {
