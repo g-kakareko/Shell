@@ -31,6 +31,7 @@ char **resolve_paths(char **args);
 char **expand_variables(char **args);
 char *space_special_char(char *line, char speacial_char);
 
+int arg_size;
 int main()
 {
             
@@ -95,9 +96,12 @@ char **my_parse (char *line)
 	char *clear_line;
 	line = parse_whitespace(line);
 	//line=clear_line;
-	printf("clear line: %s\n", line);
+	//printf("clear line: %s\n", line);
 	args = parse_arguments(line);
-	// args = expand_variables(args);
+	int i;
+	for (i = 0; i < arg_size; ++i) 
+        printf("%s\n", args[i]);
+	args = expand_variables(args);
 	// args = resolve_paths(args);
 	return NULL;
 }
@@ -121,7 +125,7 @@ char *parse_whitespace(char *line)
 	line = space_special_char(line, '|');
 	line = space_special_char(line, '&');
 	line = space_special_char(line, '$');
-	printf("Final line: %s\n", line);
+	//printf("Final line: %s\n", line);
 
 	return line;
 }
@@ -135,7 +139,8 @@ char *space_special_char(char *line, char speacial_char)
  //      		//line[x++] = line[i];
  //  	line[x] = '\0';
 	int i;
-	for(i=0; i < strlen(line); i++)
+	//for(i=0; i < strlen(line); i++)
+  	for(i=0; line[i] != '\0'; i++)
   	{
     // if(line[i]=='|' || line[i] == '<' || line[i] == '>' || line[i]== '&' ||
     //    line[i]=='$' || line[i] == '~')
@@ -160,15 +165,16 @@ char *space_special_char(char *line, char speacial_char)
 			new_line[i+1]=line[i];
 			new_line[i+2]=' ';
 			int j;
-			printf("%d\n", k);
+			//printf("%d\n", k);
 			for(j=k; j < (strlen(line)); j++)
 			{
 				new_line[j+3]=line[j+1];
 			}
 			//line=new_line;
+			new_line[j+3]='\0';
 			line=new_line;
-			printf("%s\n","t1 && t2" );
-			printf("new_line: %s\n", new_line);	
+			//printf("%s\n","t1 && t2" );
+			//printf("new_line: %s\n", new_line);	
 
       	}else if(t1)
       	{
@@ -187,9 +193,10 @@ char *space_special_char(char *line, char speacial_char)
 			{
 				new_line[j+2]=line[j+1];
 			}
+			new_line[j+2]='\0';
 			line=new_line;
-			printf("%s\n","t1" );
-			printf("new_line: %s\n", new_line);
+			//printf("%s\n","t1" );
+			//printf("new_line: %s\n", new_line);
 
       	}else if(t2)
       	{
@@ -207,22 +214,68 @@ char *space_special_char(char *line, char speacial_char)
 			{
 				new_line[j+1]=line[j];
 			}
+			new_line[j+1]='\0';
 			line=new_line;
-			printf("%s\n","t2" );
-			printf("new_line: %s\n", new_line);
+			//printf("%s\n","t2" );
+			//printf("new_line: %s\n", new_line);
 
       	}
       	}
       }
-  
-
-  	printf("line: %s\n", line);
+  	//printf("line: %s\n", line);
 	return line;	
 } 
 
 char **parse_arguments(char *line)
 {
-	return NULL;
+	int i;
+	int k=0;
+	//for(i=0; line[i] != '\0'; i++)
+	int d =strlen(line);
+	//printf("Size: %d\n", d);
+	//printf("Line in parse_arguments: %s\n", line);
+  	for(i=0; i <strlen(line); i++)
+  	{
+  		//if((line[i]=' ') && (i!=0))
+  		if(isspace(line[i]) && (i!=0))
+  		{	
+  			//printf("%s\n","We have space" );
+  			if(!isspace(line[i-1]))
+  			{
+  				//printf("%s\n","We have space" );
+  				k++;
+  			}
+  		}
+  	}	
+  	arg_size=k;
+  	//printf("spaces: %d\n", k);
+	char **vector_arg;
+	vector_arg=(char**) malloc((k)*MAXCHAR);
+
+//---------------------------
+	//printf( "Tokens:\n" );
+	char seps[] = " ";
+	char *token;
+    /* Establish string and get the first token: */
+    token = strtok(line, seps );
+    int j =0;
+    vector_arg[j]=token;
+    j++;
+    while( token != NULL )
+    {
+        /* While there are tokens in "string" */
+        //printf( " %s\n", token );
+        /* Get next token: */
+        token = strtok( NULL, seps );
+		vector_arg[j]=token;
+		j++;        
+    }
+    // for (i = 0; i < k; ++i) 
+    //     printf("%s\n", vector_arg[i]);
+
+
+	//return NULL;
+	return vector_arg;
 }
 
 char **resolve_paths(char **args)
