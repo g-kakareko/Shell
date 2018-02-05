@@ -6,7 +6,7 @@
 	2)	Jordan Camejo
 	email: 
 	3)	Grace Bunch
-	email:  
+	email: gib14@my.fsu.edu
 
 **************************************/
 
@@ -16,6 +16,8 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define MAXCHAR 255  // Max length of a single line of code.
 
@@ -31,6 +33,7 @@ char **resolve_paths(char **args);
 char **expand_variables(char **args);
 char *space_special_char(char *line, char speacial_char);
 
+
 int arg_size;
 int main()
 {
@@ -44,10 +47,14 @@ int main()
 		line = my_read();
 		//printf("%s\n",line);
 		cmd = my_parse(line);
-		printf("------------- %s\n",line);
+		//		printf("------------- %s\n",line);
+		
+	       
+
 		//my_execute(cmd);
 		//my_clean();
-
+		
+	       
 		//Setup
 		//Print prompt
 		//Read input
@@ -101,8 +108,11 @@ char **my_parse (char *line)
 	int i;
 	for (i = 0; i < arg_size; ++i) 
         printf("%s\n", args[i]);
-	args = expand_variables(args);
-	// args = resolve_paths(args);
+	//args = expand_variables(args);
+
+	//path resolution - grace
+	args = resolve_paths(args);
+
 	return NULL;
 }
 //char **parse_whitespace(char *line) 
@@ -267,20 +277,82 @@ char **parse_arguments(char *line)
         //printf( " %s\n", token );
         /* Get next token: */
         token = strtok( NULL, seps );
-		vector_arg[j]=token;
+	vector_arg[j]=token;
 		j++;        
     }
     // for (i = 0; i < k; ++i) 
     //     printf("%s\n", vector_arg[i]);
+    
 
+    
 
 	//return NULL;
 	return vector_arg;
 }
 
-char **resolve_paths(char **args)
+char **resolve_paths(char **cmd)
 {
-	return NULL;
+  
+  //grace code
+  //*********Part 4: Path Resolution **************                           
+  //.. - expands to parent of current working directory - error if on root    
+  int i,j;  
+  char *temp;
+  //to get cwd before in loop
+  char cwd[1024];
+  if(getcwd(cwd, 1024)!= NULL)
+    {}
+   
+  for(i=0; i < 1;i++){
+    int len = strlen(cmd[i]);
+     cmd[i][len-1]='\0';
+    
+    if(strcmp("..", cmd[i])==0){
+      
+      char *pch;
+   
+      pch=strrchr(cwd, '/');
+      temp= (char*) malloc(sizeof(cwd));  
+      int p = pch-cwd+1;
+     
+      for(j=0; j < pch-cwd; j++){
+	temp[j]=cwd[j];
+      }
+      
+      cmd[i] = (char*) malloc(strlen(temp));
+      strcpy(cmd[i], temp);
+     
+    }
+
+    //for current dir
+    else if(strcmp(".", cmd[i])==0){
+      
+      cmd[i] = (char*) malloc(sizeof(cwd));
+      strcpy(cmd[i], cwd);
+    }
+    //for home dir
+    else if(strcmp("~", cmd[i])==0){
+      char *home= (char*) malloc(1024);
+      strcpy(home,getenv("HOME"));
+      cmd[i] = (char*) malloc(sizeof(home));
+      strcpy(cmd[i],home);
+    }
+    //for / root directory -- i think the root dir is just '/' ? 
+    //So i don't think I would need to expand this - will email wang soon
+    else if(strcmp("/", cmd[i])==0){
+      
+
+    }
+    //file or dir or error
+    else{
+      
+        
+      
+    }
+  
+
+  }
+  return cmd;
 }
 
 char **expand_variables(char **args)
@@ -325,6 +397,7 @@ Function to et line of data from stdin
  	// printf("%s\n",command);
 	return command;
 }
+
 
 void my_execute (char ** cmd) {
 
