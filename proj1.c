@@ -285,6 +285,17 @@ char **resolve_paths(char **args)
 
 char **expand_variables(char **args)
 {
+	/*
+	$PATH
+	$HOME
+	$USER
+	$SHELL
+	$PWD
+	*/
+	int i;
+	for (i = 0; i < arg_size; ++i) 
+        printf("%s\n", args[i]);
+
 	return NULL;
 }
 
