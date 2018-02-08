@@ -30,6 +30,7 @@ char *my_read ();
 char *parse_whitespace(char *line); 
 char **parse_arguments(char *line);
 char **resolve_paths(char **args);
+char *convert_path(char *args);
 char **expand_variables(char **args);
 char *space_special_char(char *line, char speacial_char);
 
@@ -113,7 +114,7 @@ char **my_parse (char *line)
 	//path resolution - grace
 	args = resolve_paths(args);
 
-	return NULL;
+	return args;
 }
 //char **parse_whitespace(char *line) 
 char *parse_whitespace(char *line) 
@@ -292,8 +293,301 @@ char **parse_arguments(char *line)
 
 char **resolve_paths(char **cmd)
 {
-  //taking my code out for now - will add once fixed - grace
+	//code should be fixed now - grace
+	//
+ char *temp;
+  int i, j;
+  //get path 
+  char *path = getenv("PATH");
+  path[strlen(path)]='\0';
+  char split_path[100][100];
+   int exit=0;
+  j=0;
+  int l=0;
+
+
+  //set split_path
+  for(i=0; path[l]!='\0'; i++){
+    
+    while(exit!=1 && path[l]!='\0'){
+
+      if(path[l]==':'){
+        l++;
+        exit=1;
+        split_path[i][j]='\0';
+       }
+      else{
+        split_path[i][j]=path[l];
+        j++;
+        l++;
+
+      }
+    }
+    exit=0;
+    j=0;
+
+  }
+
+  int k;
+  int count=0;
+ 
+  for(i=0; i <100; i++){
+    if(cmd[i]!="\0" && cmd[i]!=" " && cmd[i]!="\n" && cmd[i]!=NULL){
+     
+      count++;
+    }
+  }
+ 
+
+  char **tempArr=cmd;
+ 
+  for(k=0; k<count-1;k++){
+
+    //dont do path resolution for special characters    
+    if(tempArr[k][0]=='|' || tempArr[k][0]=='<' || tempArr[k][0]=='>' || tempArr[k][0]=='&')
+      {}
+    else
+      {
+        int len=strlen(tempArr[k]);
+        tempArr[k][len]='\0';
+        for(i=0; i < strlen(tempArr[k]);i++){
+          if(tempArr[k][i]=='\n')
+            tempArr[k][i]='\0';
+        }
+
    
+  //check if it's a built in
+  if(strcmp(tempArr[k],"exit")==0 || strcmp(tempArr[k],"io")==0 || strcmp(tempArr[k],"echo")==0 || strcmp(tempArr[k],"etime")==0){
+   
+    //do not expand the command, do not expand arguments - do nothing
+    
+  }
+
+
+  //check if it's cd then call convert_path
+  else if(strcmp(tempArr[k],"cd")==0){
+    k++;
+    for(i=0; i < strlen(tempArr[k]);i++){
+      if(tempArr[k][i]=='\n')
+        tempArr[k][i]='\0';
+    }
+    cmd[k]=convert_path(tempArr[k]);
+   
+    
+  }
+  
+  //check if it's external - get full pathname and save in cmd[0]
+  else{
+    
+    int m;
+    int exist;
+   
+    struct stat buf;
+    //search paths, if in one of them, return 0
+    for(i=0; i<20; i++){
+      temp= calloc(strlen(split_path[i])+strlen(tempArr[k]), 1);
+      strcpy(temp,split_path[i]);
+      strcat(temp, "/");
+      strcat(temp,tempArr[k]); 
+     
+    
+      
+      //some reason \n is getting stored in some commands - so get rid of it
+      for(m=0; m < strlen(temp); m++){
+        if(temp[m]=='\n'){
+          temp[m]='\0';
+        }
+      }
+     
+      
+     
+      exist=stat(temp, &buf);
+
+      
+     
+      if(exist==0){
+        cmd[k] = (char*) calloc(strlen(temp),1);
+        //      cmd[k]=NULL;
+        strcpy(cmd[k],temp);
+        temp=NULL;
+        
+        
+        break;
+      }
+      
+
+    }
+  
+
+  }
+      
+  
+      }
+  }
+   
+  // for(i=0; i< count; i++)
+  // printf("cmd[i] is now %s\n", cmd[i]);
+
+  
+  
+
+  
+  return cmd;
+}
+//resolve_paths calls this
+char *convert_path(char *cmd){
+  
+  int i,j, k, l, t;
+  char *temp;
+  //cwd for future use
+  char *cwd = getenv("PWD");
+
+  //remove the first /
+  if(cwd[0]=='/'){
+    for(i=0; i < strlen(cwd); i++)
+      cwd[i]=cwd[i+1];
+  }
+  //getting home variable
+  char * home=getenv("HOME");
+  if(home[0]=='/'){
+    for(i=0; i < strlen(home); i++)
+      home[i]=home[i+1];
+  }
+
+  char *pch;
+  char *parent;
+  //for getting the parent of cwd
+  pch=strrchr(cwd, '/');                                                    
+  parent= (char*) malloc(sizeof(cwd));                                        
+  int p = pch-cwd+1;                                                        
+                                                      
+  for(j=0; j < pch-cwd; j++){                                               
+    parent[j]=cwd[j];                                                         
+  }                                  
+  parent[j+1]='\0';                                       
+                                   
+   
+
+    //add null delimiter to all strings - should integrate this into parsing
+    int len = strlen(cmd);
+    cmd[len]='\0';
+     
+  
+    char buffer[250];
+    l=0;
+    int count=0; //increment to 1 if match is found
+    //check if it's just '.'
+    if(strcmp(".", cmd)==0){                                            
+      strcpy(buffer, cwd);
+      l=strlen(cwd);
+      count=1;                                                      
+    }   
+    //check if it's just '..'
+    else if(strcmp("..", cmd)==0){
+      strcpy(buffer, parent);
+      l=strlen(parent);
+      count=1;
+      
+    }
+   
+    else if(strcmp("~", cmd)==0){
+      //for home dir - if no path                                             
+      strcpy(buffer,home);                                        
+      l=strlen(home);
+      count=1;
+  
+    }
+
+    //checking if ~ starts string
+    if(cmd[0]=='~' && cmd[1]=='/'){
+      count=1;
+      //copies home path
+      for(j=0; j < strlen(home); j++){
+        buffer[l]=home[j];
+        l++;
+      }
+      //copies rest of path
+      for(k=1; k < strlen(cmd);k++){
+        buffer[l]=cmd[k];
+        l++;
+      }
+    }   
+    if(count==0){
+      for(j=0; j < strlen(cmd); j++){
+      
+        //if . is found, replace with cwd
+        if(cmd[j]=='.' && (cmd[j-1]=='/' || cmd[j+1]=='/') 
+           && cmd[j-1]!='.' && cmd[j-1]!='.' ){
+       
+          count=1;
+          for(k=0; k < strlen(cwd); k++){
+            buffer[l]=cwd[k];
+            l++;
+                
+          }
+        }
+        //if . not found, copy cmd[i] to buffer
+        else{
+          if(cmd[j]!='.'){    
+            buffer[l]=cmd[j];
+            l++;
+          }
+        }
+      
+      }
+    }  
+    //if no match yet 
+    if(count==0){   
+      l=0;  
+      for(j=0; j < strlen(cmd); j++){
+        //for ..
+        if(cmd[j]=='.' && cmd[j+1]=='.' 
+           && (cmd[j-1]=='/' || cmd[j+2]=='/')){
+            
+
+          count=1;
+          for(k=0; k < strlen(parent); k++){
+            buffer[l]=parent[k];
+            l++;
+          }
+          j++;
+        }
+        //if .. not found, copy cmd[i] to buffer                              
+        else{
+           
+          buffer[l]=cmd[j];
+          l++;
+            
+            
+        }
+      }
+        
+      
+                
+    }
+    //got through all of them and still no match - must be file or dir
+    if(count==0){
+      //validate directories/files                              
+      int validity= chdir(cmd);                                        
+      if(validity==-1)                                                     
+        printf("\n%s is not a valid file/directory\n", cmd);                   
+ 
+
+    }
+ 
+        
+    buffer[l+1]='\0';                                               
+          
+    cmd = (char*) malloc(strlen(buffer));
+    strcpy(cmd,buffer);
+    cmd[l+1]='\0';
+
+    
+  return cmd;
+
+
+
+
 }
 
 char **expand_variables(char **args)
