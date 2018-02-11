@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #define MAXCHAR 255  // Max length of a single line of code.
 
@@ -33,6 +34,7 @@ char **resolve_paths(char **args);
 char *convert_path(char *args);
 char **expand_variables(char **args);
 char *space_special_char(char *line, char speacial_char);
+void builtins(char **cmd);
 
 
 int arg_size;
@@ -51,7 +53,7 @@ int main()
 		//		printf("------------- %s\n",line);
 		
 	       
-
+		builtins(cmd);
 		//my_execute(cmd);
 		//my_clean();
 		
@@ -632,8 +634,77 @@ Function to et line of data from stdin
  	// printf("%s\n",command);
 	return command;
 }
+//builtin handling
+void builtins(char **cmd){
 
+  //check exit
+  if(strcmp(cmd[0], "exit")==0){
+    printf("\nExiting Shell...\n");
+    exit(0);
+  }
 
+  //check cd
+  else if(strcmp(cmd[0],"cd")==0){
+    char *path;
+
+    /*need to fix error checking
+      if(cmd[2]!=" " && cmd[2]!="\0" && cmd[2]!= "" && cmd[2]!="\n")
+        printf("\nError: More than one argument is present\n");
+    */
+
+    /* If no arguments supplied, it behaves as if $HOME is the argument*/
+    //not working yet
+    if(cmd[1]=="\0" || cmd[1]=="" || cmd[1]==" " || cmd[1]=="\n"){
+      path=getenv("HOME");
+      printf("IN HOME");
+    }
+    else{
+      path=cmd[1];
+    }
+
+    int ret=chdir(cmd[1]);
+    if(ret==-1)
+      printf("Error: Invalid directory\n");
+    else{
+      setenv("PWD", cmd[1], 1);
+      //printf("PWD is now %s\n", getenv("PWD"));
+    }
+  }
+  //check echo - need to fix the loop number
+  else if(strcmp(cmd[0],"echo")==0){
+    int i;
+    for(i=1; i < 5; i++){
+      printf(cmd[i]);
+      printf(" ");
+    }
+    printf("\n");
+  }
+
+  //check etime
+  //doesn't work yet
+  else if(strcmp(cmd[0], "etime")==0){
+    /*    struct timeval{
+      time_t tv_sec;
+      suseconds_t tv_usec;
+    }
+
+    //stores current time into tv and current timezone in tz
+    gettimeofday(timeval *tv, strucut timezone *tz);
+
+    //output time2-time1
+    int time_sec = time2.tv_sec - time1.tv_sec;
+    int time_usec=time2.tv_usec -time1.tv_usec;
+
+    printf("Elapsed Time: %i.%i\n", time_sec, time_usec);*/
+  }
+  //checks io
+  else if(strcmp(cmd[0], "io")==0){
+    //execute supplied commands
+    //record /proc/<pid>/io while it executes
+    //when finished, output each recorded values
+  }
+
+}
 void my_execute (char ** cmd) {
 
 }
