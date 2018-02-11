@@ -20,12 +20,14 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include <sys/wait.h>
+
 #define MAXCHAR 255  // Max length of a single line of code.
 
 void my_setup();
 void my_prompt();
 char **my_parse (char *line);
-void my_execute (char ** cmd);
+int my_execute (char ** cmd);
 void my_clean ();
 char *my_read ();
 char *parse_whitespace(char *line); 
@@ -41,22 +43,17 @@ int arg_size;
 int main()
 {
             
-    char *line;
+  char *line;
 	char **cmd;
-    while (1) 
-    {
-    	my_setup();
+  while (1) 
+  {
+    my_setup();
 		my_prompt();
 		line = my_read();
-		//printf("%s\n",line);
 		cmd = my_parse(line);
-		//		printf("------------- %s\n",line);
-		
-	       
 		builtins(cmd);
-		//my_execute(cmd);
+		my_execute(cmd);
 		//my_clean();
-		
 	       
 		//Setup
 		//Print prompt
@@ -67,7 +64,6 @@ int main()
 		//Print results
 		//Cleanup
 	}
-
     return 0;
 }
 
@@ -105,20 +101,22 @@ char **my_parse (char *line)
 	char **args;
 	char *clear_line;
 	line = parse_whitespace(line);
-	//line=clear_line;
-	//printf("clear line: %s\n", line);
+	// line=clear_line;
+	// printf("clear line: %s\n", line);
 	args = parse_arguments(line);
 	int i;
-	for (i = 0; i < arg_size; ++i) 
-        printf("%s\n", args[i]);
-	//args = expand_variables(args);
+	// for (i = 0; i < arg_size; ++i) 
+  //       printf("%s\n", args[i]);
+	// args = expand_variables(args);
 
-	//path resolution - grace
+	// path resolution - grace
 	args = resolve_paths(args);
+  for (i = 0; i < arg_size; ++i) 
+        printf("%s\n", args[i]);
+
 
 	return args;
 }
-//char **parse_whitespace(char *line) 
 char *parse_whitespace(char *line) 
 {
 /**************************************
@@ -137,7 +135,7 @@ char *parse_whitespace(char *line)
 	line = space_special_char(line, '>');
 	line = space_special_char(line, '|');
 	line = space_special_char(line, '&');
-	line = space_special_char(line, '$');
+	//line = space_special_char(line, '$');
 	//printf("Final line: %s\n", line);
 
 	return line;
@@ -145,12 +143,6 @@ char *parse_whitespace(char *line)
 
 char *space_special_char(char *line, char speacial_char)
 {
-	// int i,x;
- //  	for(i=x=0; line[i]; ++i)
- //    	if(line[i]==speacial_char)
- //    		printf("we have special char");
- //      		//line[x++] = line[i];
- //  	line[x] = '\0';
 	int i;
 	//for(i=0; i < strlen(line); i++)
   	for(i=0; line[i] != '\0'; i++)
@@ -674,7 +666,10 @@ void builtins(char **cmd){
   else if(strcmp(cmd[0],"echo")==0){
     int i;
     for(i=1; i < 5; i++){
-      printf(cmd[i]);
+      // Warning:
+      //printf(cmd[i]);
+      // Changed to:
+      printf("%s",cmd[i]);
       printf(" ");
     }
     printf("\n");
@@ -705,8 +700,29 @@ void builtins(char **cmd){
   }
 
 }
-void my_execute (char ** cmd) {
+int my_execute (char ** cmd) 
+{
+  int status;
+  pid_t pid = fork();
+  if(pid <0)
+  {
+    // faillure child process not creatd
+    return -1;
+  }
+  else if(pid == 0)
+  {
+    // Child process
+    execv(cmd[0], cmd);
+    return 0;
+  }
+  else
+  {
+    // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+    waitpid(pid, &status,0); 
+    return pid;
+  }
 
+  //return 0;
 }
 
 void my_clean () {}
