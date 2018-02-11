@@ -191,19 +191,22 @@ char *parse_whitespace(char *line){
   int k=0;
   //special characters <file, cmd|, cmd|>file, you add a space bw special 
   //character and the other argument (| < > & $ ~)
-  for(i=0; i < strlen(line); i++){
+  for(i=0; i < strlen(line); i++)
+  {
     if(line[i]=='|' || line[i] == '<' || line[i] == '>' || line[i]== '&' ||
        line[i]=='$' || line[i] == '~')
       {
-	//if the spot before is not a space, must add space
-	if(line[i-1]!=' '){
-	  
-	 
-	}
-	//if the spot after is not a space, must add space
-	if(line[i+1]!=' '){
-	  
-	}
+	       //if the spot before is not a space, must add space
+      	if(line[i-1]!=' ')
+        {
+      	  
+      	 
+      	}
+	       //if the spot after is not a space, must add space
+      	if(line[i+1]!=' ')
+        {
+      	  
+      	}
       }
   }
   
