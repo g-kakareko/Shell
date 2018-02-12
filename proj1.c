@@ -800,6 +800,17 @@ int my_execute (char ** cmd)
   bool case14=false;
   bool in= false;
   bool out= false;
+  bool is_background= false;
+  if(strcmp(cmd[arg_size-1],"&") == 0)
+  {
+    is_background= true;
+    //printf("%s\n","--- We have background process !!!!" );
+  }
+
+  bool case_background= false;
+  if(strcmp(cmd[0],"&") == 0)
+    case_background= true;
+
   case2356 = (*cmd[0]=='<' || *cmd[0]=='>'); // this represents case 2,3,4,5 
   if(arg_size >1)
   {
@@ -812,7 +823,7 @@ int my_execute (char ** cmd)
     in = is_in(cmd);
   }
   
-  if(case2356 || case14)
+  if(case2356 || case14 || case_background)
   {
 /**************************************
       Print error message 
@@ -900,10 +911,16 @@ int my_execute (char ** cmd)
       return pid;
     }
 
-  }else
+  }else if (is_background)
+  {
+    
+    printf("%s\n","--- We have background process !!!!" );
+    /* code */
+  }
+  else
   {
   /**************************************
-    Normal case no pipes or redirections 
+    Normal case no pipes or redirections or background processes
   ***************************************/
     int status;
     pid_t pid = fork();
