@@ -19,7 +19,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
 #include <sys/wait.h>
 #include <fcntl.h>
 
@@ -46,6 +45,7 @@ char **flags(char **cmd);
 
 
 int arg_size;
+int count_arr; 
 int main()
 {
             
@@ -57,8 +57,9 @@ int main()
 		my_prompt();
 		line = my_read();
 		cmd = my_parse(line);
-		builtins(cmd);
+	      
 		my_execute(cmd);
+                builtins(cmd);
 		//my_clean();
 	       
 		//Setup
@@ -332,7 +333,7 @@ char **resolve_paths(char **cmd)
     }
   }
  
-
+  count_arr=count;
   char **tempArr=cmd;
  
   for(k=0; k<count-1;k++){
@@ -361,12 +362,14 @@ char **resolve_paths(char **cmd)
   //check if it's cd then call convert_path
   else if(strcmp(tempArr[k],"cd")==0){
     k++;
-    for(i=0; i < strlen(tempArr[k]);i++){
-      if(tempArr[k][i]=='\n')
-        tempArr[k][i]='\0';
-    }
+    if(count_arr>=3){
+      for(i=0; i < strlen(tempArr[k]);i++){
+	if(tempArr[k][i]=='\n')
+	  tempArr[k][i]='\0';
+      }
+    
     cmd[k]=convert_path(tempArr[k]);
-   
+    }
     
   }
   
@@ -639,33 +642,46 @@ void builtins(char **cmd){
   else if(strcmp(cmd[0],"cd")==0){
     char *path;
 
-    /*need to fix error checking
-      if(cmd[2]!=" " && cmd[2]!="\0" && cmd[2]!= "" && cmd[2]!="\n")
-        printf("\nError: More than one argument is present\n");
-    */
+    char *temp;
 
-    /* If no arguments supplied, it behaves as if $HOME is the argument*/
-    //not working yet
-    if(cmd[1]=="\0" || cmd[1]=="" || cmd[1]==" " || cmd[1]=="\n"){
-      path=getenv("HOME");
-      printf("IN HOME");
-    }
-    else{
-      path=cmd[1];
-    }
+    //more than one argument present - error
+    if(count_arr>3)
+      printf("\nError: More than one argument is present\n");
 
-    int ret=chdir(cmd[1]);
-    if(ret==-1)
-      printf("Error: Invalid directory\n");
     else{
-      setenv("PWD", cmd[1], 1);
-      //printf("PWD is now %s\n", getenv("PWD"));
+
+      //if they just type in "cd", behaves as $HOME is the arg
+      if(count_arr==2)
+	path=getenv("HOME");
+      else
+	path=cmd[1];
+
+      if(path[0]!='/'){
+	temp= (char*) malloc(strlen(path)+1);
+	strcpy(temp,"/");
+	strcat(temp,path);
+      }
+      else{
+	temp= (char*) malloc(strlen(path)+1);
+	strcpy(temp,path);
+      }
+
+      //check if it's valid dir - else error
+      int ret=chdir(temp);
+      if(ret==-1)
+	printf("Error: Invalid directory\n");
+      else
+	setenv("PWD",temp,1);
+
     }
   }
+
   //check echo - need to fix the loop number
   else if(strcmp(cmd[0],"echo")==0){
     int i;
-    for(i=1; i < 5; i++){
+
+   
+    for(i=1; i < arg_size; i++){
       // Warning:
       //printf(cmd[i]);
       // Changed to:
@@ -678,27 +694,110 @@ void builtins(char **cmd){
   //check etime
   //doesn't work yet
   else if(strcmp(cmd[0], "etime")==0){
-    /*    struct timeval{
-      time_t tv_sec;
-      suseconds_t tv_usec;
-    }
+    
+    struct timeval start, end;
+    struct timezone tzp;
 
-    //stores current time into tv and current timezone in tz
-    gettimeofday(timeval *tv, strucut timezone *tz);
+    gettimeofday(&start, &tzp);
 
-    //output time2-time1
-    int time_sec = time2.tv_sec - time1.tv_sec;
-    int time_usec=time2.tv_usec -time1.tv_usec;
+    //execute command
+    //fork child to execute cmd
+    //waitpid on child to finish
+    int i;
+    int j=0;
+    int k=0;
+    char **temp;
+    int status;    
+    temp = (char**) malloc(arg_size);
+    
+    //for(i=0; i < arg_size;i++)
+    // temp[i]=(char*)malloc(50);
+    
+    //  cmd[[strlen(cmd[1])]='\0';
+    for(i=1; i < arg_size;i++){
+      temp[j]=(char*) malloc(strlen(cmd[i]));
+      strcpy(temp[j], cmd[i]);
+      j++;
 
-    printf("Elapsed Time: %i.%i\n", time_sec, time_usec);*/
+      //temp[i][strlen(cmd[i])]='\0';
+    }   
+    
+   
+      pid_t pid=fork();
+      if(pid==0){
+	execv(temp[0], temp);
+      }
+      
+      else{
+	waitpid(pid, &status,0);
+      }    
+      
+
+    gettimeofday(&end,&tzp);
+
+    //output time2-tim1
+    int time_sec=end.tv_sec-start.tv_sec;
+    int time_usec=end.tv_usec-start.tv_usec;
+
+    printf("Elapsed Time: %i.%i\n", time_sec, time_usec);
   }
+
   //checks io
+  //**** Not working yet *****
   else if(strcmp(cmd[0], "io")==0){
     //execute supplied commands
     //record /proc/<pid>/io while it executes
     //when finished, output each recorded values
-  }
+    int i;
+    int j=0;
+    int status;
+    char **  temp = (char**) malloc(arg_size);
+    
+    for(i=1; i < arg_size;i++){
+      temp[j]=(char*) malloc(strlen(cmd[i]));
+      strcpy(temp[j], cmd[i]);
+      j++;       
+    }
+  
+    pid_t pid=fork();
 
+    //get the pid and open file
+    /*
+    char path[0x1000];
+    sprintf(path, "/proc/%d/io",pid);
+    path[strlen(path)]='\0';
+    FILE *fp = fopen(path, "r");
+    if(fp==NULL)
+      printf("NULL FILE\n");
+    
+    while(fgets(path,sizeof(path),fp)){
+      printf("%s", path);
+      }*/
+    if(pid==0){
+	execv(temp[0], temp);
+  
+    }
+    else{
+      waitpid(pid, &status,0);
+      
+    }
+    
+   
+    /* int c;
+    while(1){
+      c=fgetc(fp);
+     
+      if(feof(fp))
+	break;
+
+      //printf("%c", c);
+    }    
+    */
+    //    fclose(fp);
+    
+
+
+  }
 }
 
 
