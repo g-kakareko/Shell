@@ -142,7 +142,6 @@ char *parse_whitespace(char *line)
 	line = space_special_char(line, '|');
 	line = space_special_char(line, '&');
 	//line = space_special_char(line, '$');
-	//printf("Final line: %s\n", line);
 
 	return line;
 }
@@ -150,11 +149,8 @@ char *parse_whitespace(char *line)
 char *space_special_char(char *line, char speacial_char)
 {
 	int i;
-	//for(i=0; i < strlen(line); i++)
   	for(i=0; line[i] != '\0'; i++)
   	{
-    // if(line[i]=='|' || line[i] == '<' || line[i] == '>' || line[i]== '&' ||
-    //    line[i]=='$' || line[i] == '~')
       if(line[i]==speacial_char)
       {
       	bool t1; // [i-1]
@@ -164,75 +160,73 @@ char *space_special_char(char *line, char speacial_char)
       	t2=line[i+1]!=' ';
       	if(t1 && t2)
       	{
-			char *new_line;
-			new_line=(char*) malloc(MAXCHAR);
+    			char *new_line;
+    			new_line=(char*) malloc(MAXCHAR);
 
-			int k;
-			for(k=0; k < (i); k++)
-			{
-				new_line[k]=line[k];
-			}
-			new_line[i]=' ';
-			new_line[i+1]=line[i];
-			new_line[i+2]=' ';
-			int j;
-			//printf("%d\n", k);
-			for(j=k; j < (strlen(line)); j++)
-			{
-				new_line[j+3]=line[j+1];
-			}
-			//line=new_line;
-			new_line[j+3]='\0';
-			line=new_line;
-			//printf("%s\n","t1 && t2" );
-			//printf("new_line: %s\n", new_line);	
+    			int k;
+    			for(k=0; k < (i); k++)
+    			{
+    				new_line[k]=line[k];
+    			}
+    			new_line[i]=' ';
+    			new_line[i+1]=line[i];
+    			new_line[i+2]=' ';
+    			int j;
+    			//printf("%d\n", k);
+    			for(j=k; j < (strlen(line)); j++)
+    			{
+    				new_line[j+3]=line[j+1];
+    			}
+    			//line=new_line;
+    			new_line[j+3]='\0';
+    			line=new_line;
 
       	}else if(t1)
       	{
       		char *new_line;
-			new_line=(char*) malloc(MAXCHAR);
+			     new_line=(char*) malloc(MAXCHAR);
 
-			int k;
-			for(k=0; k < (i); k++)
-			{
-				new_line[k]=line[k];
-			}
-			new_line[i]=' ';
-			new_line[i+1]=line[i];
-			int j;
-			for(j=k; j < (strlen(line)); j++)
-			{
-				new_line[j+2]=line[j+1];
-			}
-			new_line[j+2]='\0';
-			line=new_line;
+    			int k;
+    			for(k=0; k < (i); k++)
+    			{
+    				new_line[k]=line[k];
+    			}
+    			new_line[i]=' ';
+    			new_line[i+1]=line[i];
+    			int j;
+    			for(j=k; j < (strlen(line)); j++)
+    			{
+    				new_line[j+2]=line[j+1];
+    			}
+    			new_line[j+2]='\0';
+    			line=new_line;
 			//printf("%s\n","t1" );
 			//printf("new_line: %s\n", new_line);
 
       	}else if(t2)
       	{
-      		char *new_line;
-			new_line=(char*) malloc(MAXCHAR);
+      	   char *new_line;
+			     new_line=(char*) malloc(MAXCHAR);
 
-			int k;
-			for(k=0; k <= (i); k++)
-			{
-				new_line[k]=line[k];
-			}
-			new_line[i+1]=' ';
-			int j;
-			for(j=k; j < (strlen(line)); j++)
-			{
-				new_line[j+1]=line[j];
-			}
-			new_line[j+1]='\0';
-			line=new_line;
+    			 int k;
+    			 for(k=0; k <= (i); k++)
+    			 {
+    				new_line[k]=line[k];
+    			 }  
+    			 new_line[i+1]=' ';
+    			 int j;
+    			 for(j=k; j < (strlen(line)); j++)
+    			 {
+    			 	new_line[j+1]=line[j];
+    			 }
+    			 new_line[j+1]='\0';
+    			 line=new_line;
 			//printf("%s\n","t2" );
 			//printf("new_line: %s\n", new_line);
 
       	}
-      	}
       }
+    }
   	//printf("line: %s\n", line);
 	return line;	
 } 
@@ -710,7 +704,14 @@ void builtins(char **cmd){
 
 int my_execute (char ** cmd) 
 {
-  //--- Finding errors ------
+/**************************************
+  my_execute- executes the commands and 
+  do ridericetions and pipes 
+***************************************/
+
+/**************************************
+  Checking the error
+***************************************/
   bool case2356;
   bool case14=false;
   bool in= false;
@@ -723,22 +724,15 @@ int my_execute (char ** cmd)
   
   if(arg_size >1)
   {
-    //in= *cmd[1]=='<';
-    
-    //out= *cmd[1]=='>';
     out = is_out(cmd);
     in = is_in(cmd);
-    // if(out)
-    // {
-    //   printf("%s\n", "function works");
-    // } 
   }
   
-  // printf("size: %d\n",arg_size);
-  // if(*cmd[2]=='\0')
-  //   printf("%s\n","last char null" );
-      if(case2356 || case14)
-      {
+  if(case2356 || case14)
+  {
+/**************************************
+      Print error message 
+***************************************/
 
     printf("%s\n","Signal an error for the following : ");
     printf("%s\n","CMD < ");  // Case1-
@@ -748,124 +742,113 @@ int my_execute (char ** cmd)
     printf("%s\n","> FILE");  // Case5-
     printf("%s\n",">");       // Case6-
 
-      }
-      else if(in)
+  }
+  else if(in)
+  {
+  /**************************************
+  In-- CMD < FILE 
+  ***************************************/
+
+    char **vec_flags = flags(cmd);
+    int where = output_file(cmd);
+    int status;
+    pid_t pid = fork();
+    if(pid <0)
+    {
+      // faillure child process not creatd
+      return -1;
+    }
+    else if(pid == 0)
+    {
+
+      int fd0 = open(cmd[where], O_RDONLY, 0);        
+      if(fd0 < 0)
       {
-        // --- In
-        // CMD < FILE
-          char **vec_flags = flags(cmd);
-          int where = output_file(cmd);
-          int status;
-          pid_t pid = fork();
-          //int fd = open(cmd[2],'w');
-          if(pid <0)
-          {
-            // faillure child process not creatd
-            return -1;
-          }
-          else if(pid == 0)
-          {
-            // Child process
-            /*close(STDIN_FILENO);
-            dup(fd);
-            close(fd);*/
-            // int fd1 = open(cmd[where] , O_RDONLY);
-
-            //--- here Error -------
-                int fd0 = open(cmd[where], O_RDONLY, 0);        
-                // printf("fd1: %d\n", fd1);
-                if(fd0 < 0)
-                {
-                  printf("file does not exist %s\n", cmd[where]);
-                  return -1;
-                }
-                else
-                {
-
-
-                  dup2(fd0, 0); // STDIN_FILENO here can be replaced by 0 
-                  close(fd0);
-                  execv(cmd[0], vec_flags);
-
-                  return 0;
-                }
-
-            // ------ Here Error
-          }else
-          {
-            // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
-            waitpid(pid, &status,0); 
-            //close(fd1);
-            return pid;
-          }
-
+        printf("file does not exist %s\n", cmd[where]);
+        return -1;
       }
-      else if(out)
+      else
       {
-          // -- out
-          // CMD > FILE
-          // ----- Dwie funkcje co jedna daje flagi a druga output
-          char **vec_flags = flags(cmd);
-          int where = output_file(cmd); 
-          int status;
-          pid_t pid = fork();
-          //int fd = open(cmd[2],'w');
-          if(pid <0)
-          {
-            // faillure child process not creatd
-            return -1;
-          }
-          else if(pid == 0)
-          {
-            // Child process
-            int fd1 = creat(cmd[where] , 0644);
-            dup2(fd1, STDOUT_FILENO); // 1 here can be replaced by STDOUT_FILENO
-            close(fd1);
-
-            // char **par = (char**)malloc(1*sizeof(char*));
-            // par[0] = "-l";
-            //execv(cmd[0], par);
-            execv(cmd[0], vec_flags);
-            //vec_flags
-            //execv(cmd[0], cmd);
-
-            return 0;
-          }
-          else
-          {
-            // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
-            waitpid(pid, &status,0); 
-            //close(fd1);
-            return pid;
-          }
-
-      }else
-      {
-        // ----- Normal case everything is working ---------
-        int status;
-        pid_t pid = fork();
-        if(pid <0)
-        {
-          // faillure child process not creatd
-          return -1;
-        }
-        else if(pid == 0)
-        {
-          // Child process
-          execv(cmd[0], cmd);
-          return 0;
-        }
-        else
-        {
-          // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
-          waitpid(pid, &status,0); 
-          return pid;
-        }
+        dup2(fd0, 0); // STDIN_FILENO here can be replaced by 0 
+        close(fd0);
+        execv(cmd[0], vec_flags);
+        return 0;
       }
+    }else
+    {
+      // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+      //waitpid(pid, &status,0); 
+      while (!(wait(&status) == pid)) ;
+      //close(fd1);
+      return pid;
+    }
+
+  }
+  else if(out)
+  {
+  /**************************************
+      Out-- CMD > FILE 
+  ***************************************/
+    char **vec_flags = flags(cmd);
+    int where = output_file(cmd); 
+    int status;
+    pid_t pid = fork();
+    //int fd = open(cmd[2],'w');
+    if(pid <0)
+    {
+      // faillure child process not creatd
+      return -1;
+    }
+    else if(pid == 0)
+    {
+      // Child process
+      int fd1 = creat(cmd[where] , 0644);
+      dup2(fd1, STDOUT_FILENO); // 1 here can be replaced by STDOUT_FILENO
+      close(fd1);
+      execv(cmd[0], vec_flags);
+      return 0;
+    }
+    else
+    {
+      // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+      waitpid(pid, &status,0); 
+      //close(fd1);
+      return pid;
+    }
+
+  }else
+  {
+  /**************************************
+    Normal case no pipes or redirections 
+  ***************************************/
+    int status;
+    pid_t pid = fork();
+    if(pid <0)
+    {
+      // faillure child process not creatd
+      return -1;
+    }
+    else if(pid == 0)
+    {
+      // Child process
+      execv(cmd[0], cmd);
+      return 0;
+    }
+    else
+    {
+      // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+      waitpid(pid, &status,0); 
+      return pid;
+    }
+  }
   //return 0;
 }
+
 bool is_out(char ** cmd) 
 {
+/**************************************
+    Function that check if it is out > 
+***************************************/
   int i;
   for (i = 0; i < arg_size; ++i) 
   {
@@ -880,6 +863,9 @@ bool is_out(char ** cmd)
 
 bool is_in(char ** cmd) 
 {
+/**************************************
+    Function that check if it is in < 
+***************************************/
   int i;
   for (i = 0; i < arg_size; ++i) 
   {
@@ -894,6 +880,10 @@ bool is_in(char ** cmd)
 
 char **flags(char **cmd)
 {
+/**************************************
+    Function returns vector of flags
+    for my_exe e.g [ls, -l] 
+***************************************/
   int i;
   int j;
   for (i = 0; i < arg_size; ++i) 
@@ -904,17 +894,9 @@ char **flags(char **cmd)
     } 
   
   }
-  // printf("j: %d\n",j);
   char **fl = (char**)malloc((j)*sizeof(char*));
-  // args2 = malloc(i * sizeof *args2);
-
-  //   for(j = 0; j < i; j++)
-  //   {
-  //       args2[i] = strdup(args[i]);
-  //   }
   for (i = 0; i < (j); i++)
   {
-    //fl[i]=cmd[i];
     fl[i]=strdup(cmd[i]);
     //printf("%s\n", fl[i]);
   }
@@ -924,6 +906,10 @@ char **flags(char **cmd)
 
 int output_file(char **cmd)
 {
+/**************************************
+    Returns index for file argument 
+    from cmd vector  
+***************************************/
   int i;
   int where;
   for (i = 0; i < arg_size; ++i) 
@@ -934,12 +920,6 @@ int output_file(char **cmd)
     } 
   
   }
-
-  //char *of;
-  //strncpy (of, cmd[where], sizeof(cmd[where]) ); 
-  //of=strdup(cmd[where]);
-  // //= cmd[where];
-  //printf("where: %d\n",where);
   return where;
 }
 
