@@ -1,0 +1,83 @@
+Member 1: Grzegorz Kakareko gk15
+Member 2: Jordan Camejo
+Member 3: Grace Bunch gib14
+
+================================
+Problem statment:
+================================
+Implement a shell program
+
+================================
+Steps taken to solve problem:
+================================
+1.Experimented with existing shell
+2.Took notes on how it handled builtin and external commands
+3.Implemented command line user input 
+4.Implemented parsing and path resolution
+5.Implemented execution of external commands
+6.Implemented I/O redirection
+7.Implemented piping
+8.Implemented builtin functions
+9.Tested our shell with different commands
+10.Completed
+
+================================
+Assumptions:
+================================
+No more than 255 characters would be used for input
+No more than three pipes will appear in a single line
+Pipes and I/O redirection will not occur together
+You do not need to handle zombie processes
+You do not need to support built in commands that are not specified
+You do not need to implement auto-complete
+
+================================
+System calls:
+================================
+read() - get user input
+stdio.h - output, printf, etc
+stdlib.h - fork(), execv()...
+
+================================
+Problems:
+================================
+- Getting background processes to work
+
+================================
+Known bugs:
+================================
+(copy details from README)
+
+================================
+Division of labor:
+================================
+Grace Bunch
+- prompt
+- path resolution
+- built ins
+
+
+================================
+Slack days used:
+================================
+___ days for Grace 
+...
+
+================================
+Log
+================================
+
+02/12/2017
+- Project completed
+
+...
+
+================================
+Questions
+================================
+
+
+================================
+Additional features:
+================================
+None

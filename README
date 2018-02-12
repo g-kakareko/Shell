@@ -1,0 +1,26 @@
+Member 1: Grzegorz Kakareko gk15
+Member 2: Jordan Camejo
+Member 3: Grace Bunch gib14
+
+COP-4610.tar contents: 
+README
+proj1.c
+
+Completed using: linprog
+
+To build:
+$>make
+
+To run:
+$> ./hw1
+
+To clean:
+$>make clean
+
+
+Known bugs:
+
+To do:
+1. Still need to do background processing
+
+Additional comments:
