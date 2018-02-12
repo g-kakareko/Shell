@@ -743,7 +743,6 @@ void builtins(char **cmd){
   }
 
   //checks io
-  //**** Not working yet *****
   else if(strcmp(cmd[0], "io")==0){
     //execute supplied commands
     //record /proc/<pid>/io while it executes
@@ -753,6 +752,7 @@ void builtins(char **cmd){
     int status;
     char **  temp = (char**) malloc(arg_size);
     
+    //create new array temp to store the cmd without "io" in cmd[0]
     for(i=1; i < arg_size;i++){
       temp[j]=(char*) malloc(strlen(cmd[i]));
       strcpy(temp[j], cmd[i]);
@@ -762,40 +762,25 @@ void builtins(char **cmd){
     pid_t pid=fork();
 
     //get the pid and open file
-    /*
+ 
     char path[0x1000];
     sprintf(path, "/proc/%d/io",pid);
     path[strlen(path)]='\0';
     FILE *fp = fopen(path, "r");
-    if(fp==NULL)
-      printf("NULL FILE\n");
     
-    while(fgets(path,sizeof(path),fp)){
-      printf("%s", path);
-      }*/
     if(pid==0){
 	execv(temp[0], temp);
-  
     }
     else{
+      //print io file
+      while(fgets(path,sizeof(path),fp)){
+	
+	printf("%s", path);
+      }
       waitpid(pid, &status,0);
       
     }
-    
-   
-    /* int c;
-    while(1){
-      c=fgetc(fp);
-     
-      if(feof(fp))
-	break;
-
-      //printf("%c", c);
-    }    
-    */
-    //    fclose(fp);
-    
-
+ 
 
   }
 }
