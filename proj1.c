@@ -21,6 +21,7 @@
 #include <sys/time.h>
 
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define MAXCHAR 255  // Max length of a single line of code.
 
@@ -37,6 +38,11 @@ char *convert_path(char *args);
 char **expand_variables(char **args);
 char *space_special_char(char *line, char speacial_char);
 void builtins(char **cmd);
+
+bool is_out(char ** cmd); 
+bool is_in(char ** cmd);
+int output_file(char **cmd);
+char **flags(char **cmd);
 
 
 int arg_size;
@@ -111,8 +117,8 @@ char **my_parse (char *line)
 
 	// path resolution - grace
 	args = resolve_paths(args);
-  for (i = 0; i < arg_size; ++i) 
-        printf("%s\n", args[i]);
+  // for (i = 0; i < arg_size; ++i) 
+  //       printf("%s\n", args[i]);
 
 
 	return args;
@@ -700,29 +706,241 @@ void builtins(char **cmd){
   }
 
 }
+
+
 int my_execute (char ** cmd) 
 {
-  int status;
-  pid_t pid = fork();
-  if(pid <0)
+  //--- Finding errors ------
+  bool case2356;
+  bool case14=false;
+  bool in= false;
+  bool out= false;
+  case2356 = (*cmd[0]=='<' || *cmd[0]=='>'); // this represents case 2,3,4,5 
+  if(arg_size >1)
   {
-    // faillure child process not creatd
-    return -1;
+    case14 = ((*cmd[arg_size-1]=='<' || *cmd[arg_size-1]=='>')&& arg_size==2);
   }
-  else if(pid == 0)
+  
+  if(arg_size >1)
   {
-    // Child process
-    execv(cmd[0], cmd);
-    return 0;
+    //in= *cmd[1]=='<';
+    
+    //out= *cmd[1]=='>';
+    out = is_out(cmd);
+    in = is_in(cmd);
+    // if(out)
+    // {
+    //   printf("%s\n", "function works");
+    // } 
   }
-  else
+  
+  // printf("size: %d\n",arg_size);
+  // if(*cmd[2]=='\0')
+  //   printf("%s\n","last char null" );
+      if(case2356 || case14)
+      {
+
+    printf("%s\n","Signal an error for the following : ");
+    printf("%s\n","CMD < ");  // Case1-
+    printf("%s\n","< FILE "); // Case2-
+    printf("%s\n","< ");      // Case3-
+    printf("%s\n","CMD > ");  // Case4-
+    printf("%s\n","> FILE");  // Case5-
+    printf("%s\n",">");       // Case6-
+
+      }
+      else if(in)
+      {
+        // --- In
+        // CMD < FILE
+          char **vec_flags = flags(cmd);
+          int where = output_file(cmd);
+          int status;
+          pid_t pid = fork();
+          //int fd = open(cmd[2],'w');
+          if(pid <0)
+          {
+            // faillure child process not creatd
+            return -1;
+          }
+          else if(pid == 0)
+          {
+            // Child process
+            /*close(STDIN_FILENO);
+            dup(fd);
+            close(fd);*/
+            // int fd1 = open(cmd[where] , O_RDONLY);
+
+            //--- here Error -------
+                int fd0 = open(cmd[where], O_RDONLY, 0);        
+                // printf("fd1: %d\n", fd1);
+                if(fd0 < 0)
+                {
+                  printf("file does not exist %s\n", cmd[where]);
+                  return -1;
+                }
+                else
+                {
+
+
+                  dup2(fd0, 0); // STDIN_FILENO here can be replaced by 0 
+                  close(fd0);
+                  execv(cmd[0], vec_flags);
+
+                  return 0;
+                }
+
+            // ------ Here Error
+          }else
+          {
+            // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+            waitpid(pid, &status,0); 
+            //close(fd1);
+            return pid;
+          }
+
+      }
+      else if(out)
+      {
+          // -- out
+          // CMD > FILE
+          // ----- Dwie funkcje co jedna daje flagi a druga output
+          char **vec_flags = flags(cmd);
+          int where = output_file(cmd); 
+          int status;
+          pid_t pid = fork();
+          //int fd = open(cmd[2],'w');
+          if(pid <0)
+          {
+            // faillure child process not creatd
+            return -1;
+          }
+          else if(pid == 0)
+          {
+            // Child process
+            int fd1 = creat(cmd[where] , 0644);
+            dup2(fd1, STDOUT_FILENO); // 1 here can be replaced by STDOUT_FILENO
+            close(fd1);
+
+            // char **par = (char**)malloc(1*sizeof(char*));
+            // par[0] = "-l";
+            //execv(cmd[0], par);
+            execv(cmd[0], vec_flags);
+            //vec_flags
+            //execv(cmd[0], cmd);
+
+            return 0;
+          }
+          else
+          {
+            // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+            waitpid(pid, &status,0); 
+            //close(fd1);
+            return pid;
+          }
+
+      }else
+      {
+        // ----- Normal case everything is working ---------
+        int status;
+        pid_t pid = fork();
+        if(pid <0)
+        {
+          // faillure child process not creatd
+          return -1;
+        }
+        else if(pid == 0)
+        {
+          // Child process
+          execv(cmd[0], cmd);
+          return 0;
+        }
+        else
+        {
+          // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+          waitpid(pid, &status,0); 
+          return pid;
+        }
+      }
+  //return 0;
+}
+bool is_out(char ** cmd) 
+{
+  int i;
+  for (i = 0; i < arg_size; ++i) 
   {
-    // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
-    waitpid(pid, &status,0); 
-    return pid;
+    if(strcmp(cmd[i],">") == 0)
+    {
+      return true;
+    } 
+  
+  }
+  return false;
+}
+
+bool is_in(char ** cmd) 
+{
+  int i;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if(strcmp(cmd[i],"<") == 0)
+    {
+      return true;
+    } 
+  
+  }
+  return false;
+}
+
+char **flags(char **cmd)
+{
+  int i;
+  int j;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if ((strcmp(cmd[i],"<") == 0) || (strcmp(cmd[i],">") == 0))
+    {
+      j = i;
+    } 
+  
+  }
+  // printf("j: %d\n",j);
+  char **fl = (char**)malloc((j)*sizeof(char*));
+  // args2 = malloc(i * sizeof *args2);
+
+  //   for(j = 0; j < i; j++)
+  //   {
+  //       args2[i] = strdup(args[i]);
+  //   }
+  for (i = 0; i < (j); i++)
+  {
+    //fl[i]=cmd[i];
+    fl[i]=strdup(cmd[i]);
+    //printf("%s\n", fl[i]);
+  }
+  return fl;
+}
+
+
+int output_file(char **cmd)
+{
+  int i;
+  int where;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if((strcmp(cmd[i],"<") == 0) || (strcmp(cmd[i],">") == 0))
+    {
+      where=i+1;
+    } 
+  
   }
 
-  //return 0;
+  //char *of;
+  //strncpy (of, cmd[where], sizeof(cmd[where]) ); 
+  //of=strdup(cmd[where]);
+  // //= cmd[where];
+  //printf("where: %d\n",where);
+  return where;
 }
 
 void my_clean () {}
