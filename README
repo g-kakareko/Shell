@@ -19,6 +19,7 @@ $>make clean
 
 
 Known bugs:
+- Builtins - io crashes on redirection and piping
 
 To do:
 1. Still need to do background processing
