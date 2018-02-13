@@ -1314,23 +1314,23 @@ k = how_many_pipes(cmd);
   /**************************************
   We have piping Jordan code !!!
   ***************************************/
-    printf("%s\n","We are piping");
-    if(k==1)
-    {
-      // One pipe
-    char **arg_pipe_1=pipe_1_arg(cmd);
-    char **arg_pipe_2=pipe_2_arg(cmd);
+//     printf("%s\n","We are piping");
+//     if(k==1)
+//     {
+//       // One pipe
+//     char **arg_pipe_1=pipe_1_arg(cmd);
+//     char **arg_pipe_2=pipe_2_arg(cmd);
 
-    }else if(k==2)
-    {
-      // Two pipes
-      char **arg_pipe_1=pipe_1_arg(cmd);
-      char **arg_pipe_2=pipe_2_arg(cmd);
-    }else if(k=3)
-    {
-      char **arg_pipe_1=pipe_1_arg(cmd);
-      char **arg_pipe_2=pipe_2_arg(cmd);
-    }
+//     }else if(k==2)
+//     {
+//       // Two pipes
+//       char **arg_pipe_1=pipe_1_arg(cmd);
+//       char **arg_pipe_2=pipe_2_arg(cmd);
+//     }else if(k=3)
+//     {
+//       char **arg_pipe_1=pipe_1_arg(cmd);
+//       char **arg_pipe_2=pipe_2_arg(cmd);
+//     }
 
   }
   else
