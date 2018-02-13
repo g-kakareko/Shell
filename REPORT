@@ -46,7 +46,7 @@ Problems:
 ================================
 Known bugs:
 ================================
-(copy details from README)
+- Builtins - io doesn't work for redirection
 
 ================================
 Division of labor:
