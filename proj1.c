@@ -116,7 +116,7 @@ char **my_parse (char *line)
 	// printf("Enter string here: \n");
 	// scanf("%s",toParseStr);
 	// printf("%s\n",toParseStr);
-	// free(toParseStr);
+	// (toParseStr);
 	// return NULL;
 	char **args;
 	char *clear_line;
@@ -195,7 +195,6 @@ char *space_special_char(char *line, char speacial_char)
     			new_line[j+3]='\0';
     			line=new_line;
 		
-		free(new_line);
 
       	}else if(t1)
       	{
@@ -219,7 +218,6 @@ char *space_special_char(char *line, char speacial_char)
 			//printf("%s\n","t1" );
 			//printf("new_line: %s\n", new_line);
 		
-		free(new_line);
 
       	}else if(t2)
       	{
@@ -242,7 +240,6 @@ char *space_special_char(char *line, char speacial_char)
 			//printf("%s\n","t2" );
 			//printf("new_line: %s\n", new_line);
 		
-		free(new_line);
 
       	}
       }
@@ -598,7 +595,6 @@ char *convert_path(char *cmd){
     strcpy(cmd,buffer);
     cmd[l+1]='\0';
 
-    free(parent);
   return cmd;
 
 
@@ -693,7 +689,6 @@ void builtins(char **cmd){
 	setenv("PWD",temp,1);
 
     }
-	  free(temp);
   }
 
   //check echo - need to fix the loop number
@@ -760,7 +755,6 @@ void builtins(char **cmd){
     int time_usec=end.tv_usec-start.tv_usec;
 
     printf("Elapsed Time: %i.%i\n", time_sec, time_usec);
-	free(temp);
   }
 
   //checks io
@@ -802,7 +796,6 @@ void builtins(char **cmd){
       
     }
  
-	free(temp);
   }
 }
 
@@ -1259,6 +1252,5 @@ char **pipe_2_arg(char **cmd)
 }
 
 void my_clean () {
-//freed memory in multiple functions using free(p)
-//couldn't free memory for functions that returned the mallocated pointer
+
 }
