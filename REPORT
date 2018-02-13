@@ -60,7 +60,11 @@ Grace Bunch
 - prompt
 - path resolution
 - built ins
-
+Grzegorz Kakareko
+-Parsing
+-Execution
+-I/O Redirection
+- Background Processing
 
 ================================
 Slack days used:
@@ -75,6 +79,7 @@ Log
 - Project completed
 -Builtins completed
 -Piping completed
+-Some background completed
 
 02/11/2018
 -External command execution completed
