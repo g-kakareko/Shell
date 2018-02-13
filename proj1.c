@@ -53,6 +53,12 @@ pid_t pid_back;
 int back_status;
 int queue_number=0;
 char** background_command;
+int how_many_pipes(char **cmd);
+char **pipe_1_arg(char **cmd);
+char **pipe_2_arg(char **cmd);
+char **pipe_3_arg(char **cmd);
+char **pipe_4_arg(char **cmd);
+
 int main()
 {
             
@@ -810,26 +816,23 @@ int my_execute (char ** cmd)
     executing, if is done, print 
     that executed
     ***************************************/
-    //cstatus=waitpid(-1, &status, WNOHANG);
-    //printf("%s\n","jestem w przed cstatus" );
-    //cstatus=waitpid(pid_back, &back_status, WNOHANG);
-    //cstatus=waitpid(-1, &back_status, WNOHANG);
     int j=waitpid(-1, &cstatus, WNOHANG);
     if (j>0)
     {
       queue_number--;
       printf("[%d]+ [%s]\n", queue_number,background_command[0]);
-        //fprintf(stdout,"%ld Terminated.\n",(long) cstatus);
-        //printf("%s\n","jestem w cstatus" );
     }
-
   }
+
   bool case2356;
   bool case14=false;
   bool in= false;
   bool out= false;
   bool is_background= false;
   bool case_background= false;
+  bool case79= false;
+  bool case8= false;
+
   if(arg_size >0)
   {
     if(strcmp(cmd[arg_size-1],"&") == 0)
@@ -837,7 +840,11 @@ int my_execute (char ** cmd)
       is_background= true;
       //printf("%s\n","--- We have background process !!!!" );
     }
+    if(strcmp(cmd[0],"|") == 0)
+      case79=true;
 
+    if(strcmp(cmd[arg_size-1],"|")==0)
+      case8=true;
     
     if(strcmp(cmd[0],"&") == 0)
       case_background= true;
@@ -853,8 +860,13 @@ int my_execute (char ** cmd)
     out = is_out(cmd);
     in = is_in(cmd);
   }
-  
-  if(case2356 || case14 || case_background)
+/**************************************
+      Checking for number of pipes
+***************************************/  
+int k;
+k = how_many_pipes(cmd);
+
+  if(case2356 || case14 || case_background || case79 || case8)
   {
 /**************************************
       Print error message 
@@ -867,6 +879,13 @@ int my_execute (char ** cmd)
     printf("%s\n","CMD > ");  // Case4-
     printf("%s\n","> FILE");  // Case5-
     printf("%s\n",">");       // Case6-
+    printf("%s\n","|");       // Case7-
+    printf("%s\n","CMD |");       // Case8-
+    printf("%s\n","| CMD");       // Case9-
+
+    /*|
+◦ CMD |
+◦ | CMD*/
 
   }
   else if(in)
@@ -988,6 +1007,29 @@ int my_execute (char ** cmd)
       queue_number++;
       return pid_back;
     }
+  }else if(k>0)
+  {
+  /**************************************
+  We have piping Jordan code !!!
+  ***************************************/
+    printf("%s\n","We are piping");
+    if(k==1)
+    {
+      // One pipe
+    char **arg_pipe_1=pipe_1_arg(cmd);
+    char **arg_pipe_2=pipe_2_arg(cmd);
+
+    }else if(k==2)
+    {
+      // Two pipes
+      char **arg_pipe_1=pipe_1_arg(cmd);
+      char **arg_pipe_2=pipe_2_arg(cmd);
+    }else if(k=3)
+    {
+      char **arg_pipe_1=pipe_1_arg(cmd);
+      char **arg_pipe_2=pipe_2_arg(cmd);
+    }
+
   }
   else
   {
@@ -1122,6 +1164,90 @@ int output_file(char **cmd)
   
   }
   return where;
+}
+
+int how_many_pipes(char **cmd)
+{
+/**************************************
+    Returns index number of pipes
+    if no, returns 0  
+***************************************/
+  int k=0;
+  int i;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if(strcmp(cmd[i],"|") == 0)
+    {
+      k++;
+    } 
+  
+  }
+  //printf("we have piepes: %d\n", k);
+  return k;
+}
+
+char **pipe_1_arg(char **cmd)
+{
+/**************************************
+    Function that returns 
+    the first argument for piping 
+***************************************/
+  int i;
+  int j;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if (strcmp(cmd[i],"|") == 0)
+    {
+      j = i;
+    } 
+  
+  }
+  char **fl = (char**)malloc((j)*sizeof(char*));
+  for (i = 0; i < (j); i++)
+  {
+    fl[i]=strdup(cmd[i]);
+    //printf("%s\n", fl[i]);
+  }
+  return fl;
+}
+char **pipe_2_arg(char **cmd)
+{
+/**************************************
+    Function that returns 
+    the second argument for piping 
+***************************************/
+  int i;
+  int j;
+  int first_pipe;
+  int second_pipe;
+  int k;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if ((strcmp(cmd[i],"|") == 0))
+      k++;
+    if ((strcmp(cmd[i],"|") == 0) && k==0)
+    {
+      j = i;
+      first_pipe =i;
+      //k++;
+    }
+    if ((strcmp(cmd[i],"|") == 0) && k==1)
+    {
+      j = i;
+      second_pipe =i;
+      //k++;
+    } 
+  
+  }
+  char **fl = (char**)malloc((j)*sizeof(char*));
+  int a=0;
+  for (i = (first_pipe+1); i < (second_pipe+1); i++)
+  {
+    fl[a]=strdup(cmd[i+1]);
+    a++;
+    printf("%s\n", fl[a]);
+  }
+  return fl;
 }
 
 void my_clean () {}
