@@ -668,8 +668,8 @@ void builtins(char **cmd){
 
       //check if it's valid dir - else error
       int ret=chdir(temp);
-      if(ret==-1)
-	printf("Error: Invalid directory\n");
+      if(ret==-1){}
+	//printf("Error: Invalid directory\n");
       else
 	setenv("PWD",temp,1);
 
