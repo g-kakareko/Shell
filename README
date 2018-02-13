@@ -1,5 +1,5 @@
 Member 1: Grzegorz Kakareko gk15
-Member 2: Jordan Camejo
+Member 2: Jordan Camejo jgc13c
 Member 3: Grace Bunch gib14
 
 COP-4610.tar contents: 
@@ -19,6 +19,7 @@ $>make clean
 
 
 Known bugs:
+- seg fault with pipes
 - Builtins - io crashes on redirection and piping
 
 To do:
