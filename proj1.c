@@ -42,10 +42,17 @@ bool is_out(char ** cmd);
 bool is_in(char ** cmd);
 int output_file(char **cmd);
 char **flags(char **cmd);
+char **flags_background(char **cmd);
 
 
 int arg_size;
 int count_arr; 
+bool in_background=false;
+int cstatus;
+pid_t pid_back;
+int back_status;
+int queue_number=0;
+char** background_command;
 int main()
 {
             
@@ -796,27 +803,51 @@ int my_execute (char ** cmd)
 /**************************************
   Checking the error
 ***************************************/
+  if(in_background)
+  {
+    /**************************************
+    Checkif the background process is
+    executing, if is done, print 
+    that executed
+    ***************************************/
+    //cstatus=waitpid(-1, &status, WNOHANG);
+    //printf("%s\n","jestem w przed cstatus" );
+    //cstatus=waitpid(pid_back, &back_status, WNOHANG);
+    //cstatus=waitpid(-1, &back_status, WNOHANG);
+    int j=waitpid(-1, &cstatus, WNOHANG);
+    if (j>0)
+    {
+      queue_number--;
+      printf("[%d]+ [%s]\n", queue_number,background_command[0]);
+        //fprintf(stdout,"%ld Terminated.\n",(long) cstatus);
+        //printf("%s\n","jestem w cstatus" );
+    }
+
+  }
   bool case2356;
   bool case14=false;
   bool in= false;
   bool out= false;
   bool is_background= false;
-  if(strcmp(cmd[arg_size-1],"&") == 0)
-  {
-    is_background= true;
-    //printf("%s\n","--- We have background process !!!!" );
-  }
-
   bool case_background= false;
-  if(strcmp(cmd[0],"&") == 0)
-    case_background= true;
-
-  case2356 = (*cmd[0]=='<' || *cmd[0]=='>'); // this represents case 2,3,4,5 
-  if(arg_size >1)
+  if(arg_size >0)
   {
-    case14 = ((*cmd[arg_size-1]=='<' || *cmd[arg_size-1]=='>')&& arg_size==2);
+    if(strcmp(cmd[arg_size-1],"&") == 0)
+    {
+      is_background= true;
+      //printf("%s\n","--- We have background process !!!!" );
+    }
+
+    
+    if(strcmp(cmd[0],"&") == 0)
+      case_background= true;
+
+    case2356 = (*cmd[0]=='<' || *cmd[0]=='>'); // this represents case 2,3,4,5 
+    if(arg_size >1)
+    {
+      case14 = ((*cmd[arg_size-1]=='<' || *cmd[arg_size-1]=='>')&& arg_size==2);
+    }
   }
-  
   if(arg_size >1)
   {
     out = is_out(cmd);
@@ -913,9 +944,50 @@ int my_execute (char ** cmd)
 
   }else if (is_background)
   {
+  /**************************************
+    Background processes- works only for 
+    one process like CMD &
+  ***************************************/
     
-    printf("%s\n","--- We have background process !!!!" );
-    /* code */
+    // printf("%s\n","--- We have background process !!!!" );
+    char **vec_flags = flags_background(cmd);
+    in_background= true;
+    int status;
+    background_command = vec_flags; 
+    //check pid all the time here
+    //queue_number++;
+    pid_back = fork();
+    //printf("[%d] [%d]\n", queue_number,pid_back);
+    if(pid_back <0)
+    {
+      // faillure child process not creatd
+      return -1;
+    }
+    else if(pid_back == 0)
+    {
+      // Child process
+      // [queue number] [pid]
+      //printf("[%d] [%d]\n", queue_number,pid_back);
+      execv(vec_flags[0], vec_flags);
+      // global pid and check it in the loop
+      return 0;
+    }
+    else
+    {
+      // We are in parent process and parent needs to wait. Honestly I am not sure why but it works
+      //waitpid(pid, &status,0); 
+      //waitpid(pid, &status, WNOHANG);
+      
+      //cstatus=waitpid(-1, &status, WNOHANG);
+      //cstatus=waitpid(-1, &back_status, WNOHANG);
+      //cstatus=waitpid(pid_back, &back_status, WNOHANG);
+      //wait(cstatus);
+      //exit(EXIT_SUCCESS);
+      //waitpid(pid_back, &status, 0);
+      printf("[%d] [%d]\n", queue_number,pid_back);
+      queue_number++;
+      return pid_back;
+    }
   }
   else
   {
@@ -990,6 +1062,34 @@ char **flags(char **cmd)
   for (i = 0; i < arg_size; ++i) 
   {
     if ((strcmp(cmd[i],"<") == 0) || (strcmp(cmd[i],">") == 0))
+    {
+      j = i;
+    } 
+  
+  }
+  char **fl = (char**)malloc((j)*sizeof(char*));
+  for (i = 0; i < (j); i++)
+  {
+    fl[i]=strdup(cmd[i]);
+    //printf("%s\n", fl[i]);
+  }
+  return fl;
+}
+
+
+char **flags_background(char **cmd)
+{
+/**************************************
+    Function returns vector of flags
+    for my_exe e.g [ls, -l] this function
+    is design to take all arguments before
+    background sign & 
+***************************************/
+  int i;
+  int j;
+  for (i = 0; i < arg_size; ++i) 
+  {
+    if ((strcmp(cmd[i],"&") == 0))
     {
       j = i;
     } 
