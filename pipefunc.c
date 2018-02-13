@@ -14,8 +14,19 @@ void pipeop(char** args, int numargs)
 {
 	int i;
 	int k = 0;
-	int p[2];
-	pipe(p);
+	int j = 0;
+
+//strips args into sections for execution
+	char newargs0[5][35];
+	char newargs1[5][35];
+	char newargs2[5][35];
+	char newargs3[5][35];
+
+//used to iterate through newargs
+	int count0 = 0;
+	int count1 = 0;
+	int count2 = 0;
+	int count3 = 0;
 
 	for(i = 0; i < numargs; i++)
 	{
@@ -23,12 +34,44 @@ void pipeop(char** args, int numargs)
 		{
 			if(i == numargs - 1 || i == 0 || args[i - 1][0] == '|' || args[i + 1][0] == '|')
 			{
-				printf("Error in arguments list.");
+				printf("Error in arguments list."); //error check
+			}
+			
+			k++; // number of pipes
+		}
+
+		else//if cmd argument is not a pipe add it to its respective portion
+		{
+			if(k == 0)
+			{
+				strcpy(newargs0[count0],args[i]);
+				count0++;
 			}
 
-			k++;
+			if(k == 1)
+			{
+				strcpy(newargs1[count1],args[i]);
+				count1++;
+
+			}
+
+			if(k == 2)
+			{
+				strcpy(newargs2[count2],args[i]);
+				count2++;
+
+			}
+
+			if(k == 3)
+			{
+				strcpy(newargs3[count3],args[i]);
+				count3++;
+
+			}	
 		}
-	}	
+	}
+
+	if(k == 0) return;
 
 	int wait;
 	int wait1;
@@ -61,7 +104,7 @@ void pipeop(char** args, int numargs)
 			close(FD2[1]);
 			close(FD3[0]);
 			close(FD3[1]);
-			execvp(args[i - 1], args);
+			execvp(newargs0[0], newargs0);
 		}
 
 		else
@@ -79,7 +122,7 @@ void pipeop(char** args, int numargs)
 				close(FD2[1]);
                         	close(FD3[0]);
 				close(FD3[1]);
-				execvp(args[i + 1], args);
+				execvp(newargs1[0], newargs1);
 			}
 
 			else
@@ -104,7 +147,7 @@ void pipeop(char** args, int numargs)
                         close(FD3[0]);
                         close(FD3[1]);
 
-			execvp(args[i - 1], args);
+			execvp(newargs0[0], newargs0);
 		}
 
 		else
@@ -125,7 +168,7 @@ void pipeop(char** args, int numargs)
                                 close(FD3[0]);
                                 close(FD3[1]);
 
-				execvp(args[i + 1], args);
+				execvp(newargs1[0], newargs1);
 			}
 
 			else
@@ -144,7 +187,7 @@ void pipeop(char** args, int numargs)
         	                        close(FD3[0]);
 	                                close(FD3[1]);
 
-					execvp(args[i + 3], args);
+					execvp(newargs2[0], newargs2);
 				}
 
 				else
@@ -170,7 +213,7 @@ void pipeop(char** args, int numargs)
                                 close(FD3[0]);
                                 close(FD3[1]);
 
-				execvp(args[i - 1], args);
+				execvp(newargs0[0], newargs0);
 			}
 
 			else
@@ -189,7 +232,7 @@ void pipeop(char** args, int numargs)
 	                                close(FD3[0]);
 	                                close(FD3[1]);
 
-					execvp(args[i + 1], args);
+					execvp(newargs1[0], newargs1);
 				}
 
 				else
@@ -209,7 +252,7 @@ void pipeop(char** args, int numargs)
 	                	                close(FD2[1]);
 	                                	close(FD3[0]);
 
-						execvp(args[i + 3], args);
+						execvp(newargs2[0], newargs2);
 					}
 					
 					else
@@ -225,7 +268,7 @@ void pipeop(char** args, int numargs)
                         			        close(FD2[1]);
                         			        close(FD3[0]);
 		
-							execvp(args[i + 5], args);
+							execvp(newargs3[0], newargs3);
 						}
 						
 						else
